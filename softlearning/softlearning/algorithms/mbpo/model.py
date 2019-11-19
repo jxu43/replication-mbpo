@@ -3,9 +3,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+import gzip
+
 device = torch.device('cuda')
 
-BATCH_SIZE = 1000
+num_train = 60000 # 60k train examples
+num_test = 10000 # 10k test examples
+train_inputs_file_path = './MNIST_data/train-images-idx3-ubyte.gz'
+train_labels_file_path = './MNIST_data/train-labels-idx1-ubyte.gz'
+test_inputs_file_path = './MNIST_data/t10k-images-idx3-ubyte.gz'
+test_labels_file_path = './MNIST_data/t10k-labels-idx1-ubyte.gz'
+
+BATCH_SIZE = 100
 
 class Game_model(nn.Module):
     def __init__(self, state_size, action_size, reward_size, hidden_size=200, learning_rate=1e-2):
@@ -87,3 +96,30 @@ class Swish(nn.Module):
     def forward(self, x):
         x = x * F.sigmoid(x)
         return x
+
+def get_data(inputs_file_path, labels_file_path, num_examples):
+    with open(inputs_file_path, 'rb') as f, gzip.GzipFile(fileobj=f) as bytestream:
+			bytestream.read(16)
+			buf = bytestream.read(28 * 28 * num_examples)
+			data = np.frombuffer(buf, dtype=np.uint8) / 255.0
+			inputs = data.reshape(num_examples, 784)
+
+	with open(labels_file_path, 'rb') as f, gzip.GzipFile(fileobj=f) as bytestream:
+			bytestream.read(8)
+			buf = bytestream.read(num_examples)
+			labels = np.frombuffer(buf, dtype=np.uint8)
+
+	return np.array(inputs, dtype=np.float32), np.array(labels, dtype=np.int8)
+
+def main():
+    # Import MNIST train and test examples into train_inputs, train_labels, test_inputs, test_labels
+    train_inputs, train_labels = get_data(train_inputs_file_path, train_labels_file_path, num_train)
+    test_inputs, test_labels = get_data(test_inputs_file_path, test_labels_file_path, num_test)
+
+    model = Ensemble_Model(5, 3, 5, 779, 5, 50)
+    for i in range(0, 10000, BATCH_SIZE):
+        model.train(train_inputs[i:i+BATCH_SIZE], train_labels[i:i+BATCH_SIZE])
+    model.predict(test_inputs[:1000])
+
+if __name__ == '__main__':
+    main()
