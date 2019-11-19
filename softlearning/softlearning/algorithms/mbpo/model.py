@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 import numpy as np
 
 import gzip
@@ -38,7 +39,7 @@ class Game_model(nn.Module):
         )
         self.nn5 = nn.Linear(hidden_size, state_size + reward_size)
 
-        self.optimizer = torch.optim.Adam(lr=learning_rate)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
 
     def forward(self, x):
         nn1_output = self.nn1(x)
@@ -68,11 +69,11 @@ class Ensemble_Model():
         self.reward_size = reward_size
         self.elite_model_idxes = []
         for i in range(network_size):
-            model_list.append(Game_model(state_size, action_size, reward_size, hidden_size))
+            self.model_list.append(Game_model(state_size, action_size, reward_size, hidden_size))
 
     def train(self, inputs, labels):
         losses = []
-        for model in model_list:
+        for model in self.model_list:
             logits = model(inputs)
             loss = model.loss(logits, labels)
             model.train(loss)
@@ -99,17 +100,17 @@ class Swish(nn.Module):
 
 def get_data(inputs_file_path, labels_file_path, num_examples):
     with open(inputs_file_path, 'rb') as f, gzip.GzipFile(fileobj=f) as bytestream:
-			bytestream.read(16)
-			buf = bytestream.read(28 * 28 * num_examples)
-			data = np.frombuffer(buf, dtype=np.uint8) / 255.0
-			inputs = data.reshape(num_examples, 784)
+        bytestream.read(16)
+        buf = bytestream.read(28 * 28 * num_examples)
+        data = np.frombuffer(buf, dtype=np.uint8) / 255.0
+        inputs = data.reshape(num_examples, 784)
 
-	with open(labels_file_path, 'rb') as f, gzip.GzipFile(fileobj=f) as bytestream:
-			bytestream.read(8)
-			buf = bytestream.read(num_examples)
-			labels = np.frombuffer(buf, dtype=np.uint8)
+    with open(labels_file_path, 'rb') as f, gzip.GzipFile(fileobj=f) as bytestream:
+        bytestream.read(8)
+        buf = bytestream.read(num_examples)
+        labels = np.frombuffer(buf, dtype=np.uint8)
 
-	return np.array(inputs, dtype=np.float32), np.array(labels, dtype=np.int8)
+    return np.array(inputs, dtype=np.float32), np.array(labels, dtype=np.int8)
 
 def main():
     # Import MNIST train and test examples into train_inputs, train_labels, test_inputs, test_labels
@@ -118,8 +119,8 @@ def main():
 
     model = Ensemble_Model(5, 3, 5, 779, 5, 50)
     for i in range(0, 10000, BATCH_SIZE):
-        model.train(train_inputs[i:i+BATCH_SIZE], train_labels[i:i+BATCH_SIZE])
-    model.predict(test_inputs[:1000])
+        model.train(Variable(torch.from_numpy(train_inputs[i:i+BATCH_SIZE])), Variable(torch.from_numpy(train_labels[i:i+BATCH_SIZE])))
+    model.predict(Variable(torch.from_numpy(test_inputs[:1000])))
 
 if __name__ == '__main__':
     main()
