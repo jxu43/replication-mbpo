@@ -36,9 +36,10 @@ def readParser():
 
     parser.add_argument('--cuda', default=True, action="store_true",
                     help='run on CUDA (default: True)')
+    return parser.parse_args()
 
 def main():
-    readParser()
+    args = readParser()
 
     # Initial environment
     env = gym.make(args.env_name)
