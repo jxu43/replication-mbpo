@@ -47,7 +47,7 @@ class Game_model(nn.Module):
         nn3_output = self.nn3(nn2_output)
         nn4_output = self.nn4(nn3_output)
         nn5_output = self.nn5(nn4_output)
-
+        return nn5_output
 
     def loss(self, logits, labels):
         mse_loss = nn.MSELoss()
@@ -82,10 +82,11 @@ class Ensemble_Model():
         self.elite_model_idxes = sorted_loss_idx[:self.elite_size].tolist()
 
     def predict(self, inputs):
-        ensemble_logtis = np.zeros((self.state_size + self.reward_size, self.elite_size))
+        #TODO: change hardcode number to len(?)
+        ensemble_logtis = np.zeros((1000, self.state_size + self.reward_size, self.elite_size))
         cnt = 0
-        for idx in elite_model_idxes:
-            ensemble_logtis[:cnt] = model[idx](inputs).detach().numpy()
+        for idx in self.elite_model_idxes:
+            ensemble_logtis[:,:,cnt] = self.model_list[idx](inputs).detach().numpy()
             cnt += 1
         return ensemble_logtis
 
