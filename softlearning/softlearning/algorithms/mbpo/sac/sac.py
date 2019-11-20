@@ -2,8 +2,8 @@ import os
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
-from utils import soft_update, hard_update
-from model import GaussianPolicy, QNetwork, DeterministicPolicy
+from sac.utils import soft_update, hard_update
+from sac.model import GaussianPolicy, QNetwork, DeterministicPolicy
 
 
 class SAC(object):
@@ -17,7 +17,7 @@ class SAC(object):
         self.target_update_interval = args.target_update_interval
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
 
-        self.device = torch.device("cuda" if args.cuda else "cpu") 
+        self.device = torch.device("cuda" if args.cuda else "cpu")
 
         self.critic = QNetwork(num_inputs, action_space.shape[0], args.hidden_size).to(device=self.device)
         self.critic_optim = Adam(self.critic.parameters(), lr=args.lr)
@@ -83,7 +83,7 @@ class SAC(object):
         self.critic_optim.zero_grad()
         qf2_loss.backward()
         self.critic_optim.step()
-        
+
         self.policy_optim.zero_grad()
         policy_loss.backward()
         self.policy_optim.step()
@@ -119,7 +119,7 @@ class SAC(object):
         print('Saving models to {} and {}'.format(actor_path, critic_path))
         torch.save(self.policy.state_dict(), actor_path)
         torch.save(self.critic.state_dict(), critic_path)
-    
+
     # Load model parameters
     def load_model(self, actor_path, critic_path):
         print('Loading models from {} and {}'.format(actor_path, critic_path))
@@ -127,4 +127,3 @@ class SAC(object):
             self.policy.load_state_dict(torch.load(actor_path))
         if critic_path is not None:
             self.critic.load_state_dict(torch.load(critic_path))
-
