@@ -37,7 +37,13 @@ class Game_model(nn.Module):
             nn.Linear(hidden_size, hidden_size),
             Swish()
         )
-        self.nn5 = nn.Linear(hidden_size, state_size + reward_size)
+
+        self.output_dim = state_size + reward_size
+        # Add variance output
+        self.nn5 = nn.Linear(hidden_size, self.output_dim * 2)
+
+        self.max_logvar = Variable(torch.ones(1, self.output_dim).type(torch.FloatTensor) / 2, requires_grad=True)
+        self.min_logvar = Variable(-torch.ones(1, self.output_dim).type(torch.FloatTensor) * 10, requires_grad=True)
 
         self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
 
@@ -47,15 +53,28 @@ class Game_model(nn.Module):
         nn3_output = self.nn3(nn2_output)
         nn4_output = self.nn4(nn3_output)
         nn5_output = self.nn5(nn4_output)
-        return nn5_output
 
-    def loss(self, logits, labels):
-        mse_loss = nn.MSELoss()
-        loss = mse_loss(input=logits, target=labels)
-        return loss
+        mean = nn5_output[:, :, :self.output_dim + 1]
+
+        logvar = self.max_logvar - torch.nn.Softplus(self.max_logvar - nn5_output[:, :, self.output_dim + 1:])
+        logvar = self.min_logvar + torch.nn.Softplus(logvar - self.min_logvar)
+
+        return mean, logvar
+
+    def loss(self, mean, logvar, labels, inc_var_loss=True):
+        inv_var = torch.exp(-logvar)
+        if inc_var_loss:
+            mse_loss = torch.mean(torch.pow(mean - labels, 2) * inv_var)
+            var_loss = torch.mean(log_var)
+            total_loss = mse_loss + var_loss
+        else:
+            mse_loss = nn.MSELoss()
+            total_loss = mse_loss(input=logits, target=labels)
+        return total_loss
 
     def train(self, loss):
         self.optimizer.zero_grad()
+        loss += 0.01 * torch.sum(self.max_logvar) - 0.01 * torch.sum(self.min_logvar)
         loss.backward()
         self.optimizer.step()
 
@@ -74,8 +93,8 @@ class Ensemble_Model():
     def train(self, inputs, labels):
         losses = []
         for model in self.model_list:
-            logits = model(inputs)
-            loss = model.loss(logits, labels)
+            mean, logvar = model(inputs)
+            loss = model.loss(mean, logvar, labels)
             model.train(loss)
             losses.append(loss)
         sorted_loss_idx = np.argsort(losses)
@@ -83,12 +102,14 @@ class Ensemble_Model():
 
     def predict(self, inputs):
         #TODO: change hardcode number to len(?)
-        ensemble_logtis = np.zeros((1000, self.state_size + self.reward_size, self.elite_size))
+        ensemble_mean = np.zeros((inputs.size()[0], self.state_size + self.reward_size, self.elite_size))
+        ensemble_logvar = np.zeros((inputs.size()[0], self.state_size + self.reward_size, self.elite_size))
         cnt = 0
         for idx in self.elite_model_idxes:
-            ensemble_logtis[:,:,cnt] = self.model_list[idx](inputs).detach().numpy()
+            pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
+            ensemble_mean[:,:,cnt], ensemble_logvar[:,:,cnt] = pred_2d_mean.detach().numpy(), pred_2d_logvar.detach().numpy()
             cnt += 1
-        return ensemble_logtis
+        return ensemble_mean, ensemble_logvar
 
 
 class Swish(nn.Module):

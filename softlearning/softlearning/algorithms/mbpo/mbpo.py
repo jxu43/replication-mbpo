@@ -31,6 +31,11 @@ def readParser():
     parser.add_argument('--lr', type=float, default=0.0003, metavar='G',
                     help='learning rate (default: 0.0003)')
 
+    parser.add_argument('--num_networks', type=int, default=7, metavar='E',
+                    help='ensemble size (default: 7)')
+    parser.add_argument('--num_elites', type=int, default=5, metavar='E',
+                    help='elite size (default: 5)')
+
     parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 10000000)')
 
@@ -54,6 +59,9 @@ def main():
 
     # Memory
     memory = ReplayMemory(args.replay_size)
+
+    # Initial environment model_list
+    env_model = Ensemble_Model(args.num_networks, args.num_elites, )
 
 
 if __name__ == '__main__':
