@@ -1,9 +1,24 @@
 import numpy as np
 
 class PredictEnv:
-    def __init__(self, model, config):
+    def __init__(self, model, env_name):
         self.model = model
-        self.config = config
+        self.env_name = env_name
+
+    def _termination_fn(self, env_name, obs, act, next_obs):
+        if env_name == "Hopper_v2":
+            assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
+
+            height = next_obs[:, 0]
+            angle = next_obs[:, 1]
+            not_done =  np.isfinite(next_obs).all(axis=-1) \
+                        * np.abs(next_obs[:,1:] < 100).all(axis=-1) \
+                        * (height > .7) \
+                        * (np.abs(angle) < .2)
+
+            done = ~not_done
+            done = done[:,None]
+            return done
 
     def _get_logprob(self, x, means, variances):
 
@@ -51,7 +66,7 @@ class PredictEnv:
         log_prob, dev = self._get_logprob(samples, ensemble_model_means, ensemble_model_vars)
 
         rewards, next_obs = samples[:,:1], samples[:,1:]
-        terminals = self.config.termination_fn(obs, act, next_obs)
+        terminals = self._termination_fn(self.env_name, obs, act, next_obs)
 
         batch_size = model_means.shape[0]
         return_means = np.concatenate((model_means[:,:1], terminals, model_means[:,1:]), axis=-1)
@@ -66,4 +81,3 @@ class PredictEnv:
 
         info = {'mean': return_means, 'std': return_stds, 'log_prob': log_prob, 'dev': dev}
         return next_obs, rewards, terminals, info
-        

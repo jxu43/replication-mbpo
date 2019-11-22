@@ -79,7 +79,7 @@ class Game_model(nn.Module):
         self.optimizer.step()
 
 class Ensemble_Model():
-    def __init__(self, network_size, elite_size, state_size, action_size, reward_size, hidden_size):
+    def __init__(self, network_size, elite_size, state_size, action_size, reward_size=1, hidden_size=200):
         self.network_size = network_size
         self.elite_size = elite_size
         self.model_list = []
