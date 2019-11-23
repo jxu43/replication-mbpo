@@ -52,31 +52,64 @@ def readParser():
                     help='rollout number M')
     parser.add_argument('--epoch_length', type=int, default=1000, metavar='A',
                     help='steps per epoch')
-    parser.add_argument('--rollout_length', type=int, default=1, metavar='A',
-                    help='rollout length')
+    parser.add_argument('--rollout_min_epoch', type=int, default=20, metavar='A',
+                    help='rollout min epoch')
+    parser.add_argument('--rollout_max_epoch', type=int, default=150, metavar='A',
+                    help='rollout max epoch')
+    parser.add_argument('--rollout_min_length', type=int, default=1, metavar='A',
+                    help='rollout min length')
+    parser.add_argument('--rollout_max_length', type=int, default=15, metavar='A',
+                    help='rollout max length')
     parser.add_argument('--num_epoch', type=int, default=1000, metavar='A',
                     help='total number of epochs')
     parser.add_argument('--min_pool_size', type=int, default=1000, metavar='A',
                     help='minimum pool size')
-    parser.add_argument('--real_ratio', type=float, default=0.1, metavar='A',
+    parser.add_argument('--real_ratio', type=float, default=0.05, metavar='A',
                     help='ratio of env samples / model samples')
+    parser.add_argument('--train_every_n_steps', type=int, default=1, metavar='A',
+                    help='frequency of training policy')
+    parser.add_argument('--num_train_repeat', type=int, default=1, metavar='A',
+                    help='times to training policy per step')
+    parser.add_argument('--max_train_repeat_per_step', type=int, default=5, metavar='A',
+                    help='max training times per step')
+    parser.add_argument('--policy_train_batch_size', type=int, default=256, metavar='A',
+                    help='batch size for training policy')
 
     parser.add_argument('--cuda', default=True, action="store_true",
                     help='run on CUDA (default: True)')
     return parser.parse_args()
 
-def train(args, env, predict_env, agent, env_pool, model_pool):
-    steps_cnt = 0
+
+def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
+    total_step = 0
     for epoch_step in range(args.num_epoch):
-        start_step = steps_cnt
+        start_step = total_step
+        train_policy_steps = 0
         for i in count():
-            cur_step = steps_cnt - start_step
+            cur_step = total_step - start_step
 
             if (cur_step >= start_step + args.epoch_length and len(env_pool) > args.min_pool_size):
                 break
 
             if cur_step % args.model_train_freq == 0 and args.real_ratio < 1.0:
-                pass
+                train_predict_model(env_pool, predict_env)
+                set_rollout_length(args, epoch_step)
+                rollout_model(args, predict_env, agent, model_pool)
+
+            cur_state, action, next_state, reward, done, info = env_sampler.sample()
+            env_pool.push(cur_state, action, reward, next_state, done)
+
+            if len(env_pool) > args.min_pool_size):
+                train_policy_repeats(args, total_step, train_policy_steps, cur_step, env_pool, model_pool, agent)
+
+            total_step += 1
+
+
+def set_rollout_length(args, epoch_step):
+    rollout_length = (min(max(args.rollout_min_length + (epoch_step - args.rollout_min_epoch)
+        / (args.rollout_max_epoch - args.rollout_min_epoch) * (args.rollout_max_length - args.rollout_min_length),
+        args.rollout_min_length), args.rollout_max_length))
+    return int(rollout_length)
 
 
 def train_predict_model(env_pool, predict_env):
@@ -93,7 +126,7 @@ def rollout_model(args, predict_env, agent, model_pool):
     state, action, reward, next_state, done = env_pool.sample(args.rollout_batch_size)
     for i in range(args.rollout_length):
         # TODO: Get a batch of actions
-        action = agent.select_action(state)
+        action = agent.select_action(state, eval=True)
         next_states, rewards, terminals, info = predict_env.step(obs, act)
         # TODO: Push a batch of samples
         model_pool.push(state, action, rewards, next_states, terminals)
@@ -101,6 +134,32 @@ def rollout_model(args, predict_env, agent, model_pool):
         if nonterm_mask.sum() == 0:
             break
         state = next_states[nonterm_mask]
+
+
+def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model_pool, agent):
+    if total_step % args.train_every_n_steps > 0:
+        return 0
+
+    if train_step > args.max_train_repeat_per_step * cur_step:
+        return 0
+
+    for i in range(args.num_train_repeat):
+        env_batch_size = args.policy_train_batch_size * args.real_ratio
+        model_batch_size = args.policy_train_batch_size - env_batch_size
+
+        env_state, env_action, env_reward, env_next_state, env_done = env_pool.sample(env_batch_size)
+
+        if model_batch_size > 0:
+            model_state, model_action, model_reward, model_next_state, model_done = model_pool.sample(model_batch_size)
+            batch_state, batch_action, batch_reward, batch_next_state, batch_done = np.concatenate((env_state, model_state), axis=0), \
+                np.concatenate((env_action, model_action), axis=0), np.concatenate((env_reward, model_reward), axis=0), \
+                np.concatenate((env_next_state, model_next_state), axis=0), np.concatenate((env_done, model_done), axis=0)
+        else:
+            batch_state, batch_action, batch_reward, batch_next_state, batch_done = env_state, env_action, env_reward, env_next_state, env_done
+
+        agent.update_parameters((batch_state, batch_action, batch_reward, batch_next_state, batch_done), args.policy_train_batch_size, i)
+
+    return args.num_train_repeat
 
 
 def main():
@@ -136,6 +195,8 @@ def main():
     new_pool_size = args.model_retain_epochs * model_steps_per_epoch
     model_pool = ReplayMemory(new_pool_size)
 
+    # Sampler of environment
+    env_sampler = EnvSampler(env, agent)
 
 
 if __name__ == '__main__':
