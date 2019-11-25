@@ -10,6 +10,7 @@ class EnvSampler:
         self._max_path_length = max_path_length
 
     def sample(self):
+        
         if self.current_state is None:
             self.current_state = self.env.reset()
 
