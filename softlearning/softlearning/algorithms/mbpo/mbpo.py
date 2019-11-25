@@ -100,7 +100,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
             cur_state, action, next_state, reward, done, info = env_sampler.sample()
             env_pool.push(cur_state, action, reward, next_state, done)
 
-            if len(env_pool) > args.min_pool_size):
+            if len(env_pool) > args.min_pool_size:
                 train_policy_repeats(args, total_step, train_policy_steps, cur_step, env_pool, model_pool, agent)
 
             total_step += 1
