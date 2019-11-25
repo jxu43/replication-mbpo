@@ -1,7 +1,7 @@
 import gym
 
 class EnvSampler():
-     def __init__(self, env, agent, max_path_length=1000):
+    def __init__(self, env, agent, max_path_length=1000):
         self.env = env
         self.agent = agent
 
