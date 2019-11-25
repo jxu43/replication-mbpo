@@ -18,6 +18,8 @@ class ReplayMemory:
         self.buffer[idxes] = batch
 
     def sample(self, batch_size):
+        if batch_size > position + 1:
+            batch_size = position + 1
         batch = random.sample(self.buffer, batch_size)
         state, action, reward, next_state, done = map(np.stack, zip(*batch))
         return state, action, reward, next_state, done
