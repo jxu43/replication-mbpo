@@ -1,6 +1,6 @@
 import gym
 
-class EnvSampler:
+class EnvSampler():
      def __init__(self, env, agent, max_path_length=1000):
         self.env = env
         self.agent = agent
@@ -10,7 +10,6 @@ class EnvSampler:
         self._max_path_length = max_path_length
 
     def sample(self):
-        
         if self.current_state is None:
             self.current_state = self.env.reset()
 
