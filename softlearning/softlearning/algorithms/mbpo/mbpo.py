@@ -104,7 +104,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
                     rollout_length = new_rollout_length
                     model_pool = resize_model_pool(args, rollout_length, model_pool)
 
-                rollout_model(args, predict_env, agent, model_pool)
+                rollout_model(args, predict_env, agent, model_pool, rollout_length)
 
             cur_state, action, next_state, reward, done, info = env_sampler.sample()
             env_pool.push(cur_state, action, reward, next_state, done)
