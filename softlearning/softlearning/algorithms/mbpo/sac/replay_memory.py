@@ -13,10 +13,17 @@ class ReplayMemory:
         self.buffer[self.position] = (state, action, reward, next_state, done)
         self.position = (self.position + 1) % self.capacity
 
+    def push_batch(self, batch):
+        idxes = [(self.position + i) % self.capacity for i in range(len(batch))]
+        self.buffer[idxes] = batch
+
     def sample(self, batch_size):
         batch = random.sample(self.buffer, batch_size)
         state, action, reward, next_state, done = map(np.stack, zip(*batch))
         return state, action, reward, next_state, done
+
+    def return_all(self):
+        return self.buffer
 
     def __len__(self):
         return len(self.buffer)

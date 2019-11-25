@@ -86,6 +86,7 @@ def readParser():
 def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
     total_step = 0
     reward_sum = 0
+    rollout_length = 1
     for epoch_step in range(args.num_epoch):
         start_step = total_step
         train_policy_steps = 0
@@ -97,7 +98,11 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
 
             if cur_step % args.model_train_freq == 0 and args.real_ratio < 1.0:
                 train_predict_model(env_pool, predict_env)
-                set_rollout_length(args, epoch_step)
+                new_rollout_length = set_rollout_length(args, epoch_step)
+                if rollout_length != new_rollout_length:
+                    rollout_length = new_rollout_length
+                    model_pool = resize_model_pool(args, rollout_length, model_pool)
+
                 rollout_model(args, predict_env, agent, model_pool)
 
             cur_state, action, next_state, reward, done, info = env_sampler.sample()
@@ -128,9 +133,21 @@ def train_predict_model(env_pool, predict_env):
     predict_env.model.train(inputs, labels)
 
 
-def rollout_model(args, predict_env, agent, model_pool):
+def resize_model_pool(args, rollout_length, model_pool):
+    rollouts_per_epoch = args.rollout_batch_size * args.epoch_length / args.model_train_freq
+    model_steps_per_epoch = int(rollout_length * rollouts_per_epoch)
+    new_pool_size = args.model_retain_epochs * model_steps_per_epoch
+
+    sample_all = model_pool.return_all()
+    new_model_pool = ReplayMemory(new_pool_size)
+    new_model_pool.push_batch(sample_all)
+
+    return new_model_pool
+
+
+def rollout_model(args, predict_env, agent, model_pool, rollout_length):
     state, action, reward, next_state, done = env_pool.sample(args.rollout_batch_size)
-    for i in range(args.rollout_length):
+    for i in range(rollout_length):
         # TODO: Get a batch of actions
         action = agent.select_action(state, eval=True)
         next_states, rewards, terminals, info = predict_env.step(obs, act)
@@ -197,7 +214,7 @@ def main():
     env_pool = ReplayMemory(args.replay_size)
     # Initial pool for model
     rollouts_per_epoch = args.rollout_batch_size * args.epoch_length / args.model_train_freq
-    model_steps_per_epoch = int(args.rollout_length * rollouts_per_epoch)
+    model_steps_per_epoch = int(1 * rollouts_per_epoch)
     new_pool_size = args.model_retain_epochs * model_steps_per_epoch
     model_pool = ReplayMemory(new_pool_size)
 
