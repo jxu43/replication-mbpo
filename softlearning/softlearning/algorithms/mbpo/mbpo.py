@@ -82,6 +82,7 @@ def readParser():
 
 def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
     total_step = 0
+    reward_sum = 0
     for epoch_step in range(args.num_epoch):
         start_step = total_step
         train_policy_steps = 0
@@ -103,6 +104,8 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
                 train_policy_repeats(args, total_step, train_policy_steps, cur_step, env_pool, model_pool, agent)
 
             total_step += 1
+            reward_sum += reward
+            print(total_step, reward_sum)
 
 
 def set_rollout_length(args, epoch_step):
@@ -197,6 +200,8 @@ def main():
 
     # Sampler of environment
     env_sampler = EnvSampler(env, agent)
+
+    train(args, env_sampler, predict_env, agent, env_pool, model_pool)
 
 
 if __name__ == '__main__':
