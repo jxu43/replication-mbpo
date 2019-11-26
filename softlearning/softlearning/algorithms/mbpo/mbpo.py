@@ -1,4 +1,6 @@
 import argparse
+import logging
+import time
 import gym
 import torch
 import numpy as np
@@ -84,6 +86,7 @@ def readParser():
 
 
 def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
+    logging.basicConfig(filename=time.strftime("%Y%m%d-%H%M%S") + '_train.log', level=logging.INFO)
     total_step = 0
     reward_sum = 0
     rollout_length = 1
@@ -115,6 +118,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
             total_step += 1
 
             if total_step % 1000 == 0:
+                logging.info(total_step, env_sampler.path_rewards[-1])
                 print(total_step, env_sampler.path_rewards[-1])
 
 
