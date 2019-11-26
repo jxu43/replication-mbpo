@@ -175,7 +175,7 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
         return 0
 
     for i in range(args.num_train_repeat):
-        env_batch_size = args.policy_train_batch_size * args.real_ratio
+        env_batch_size = int(args.policy_train_batch_size * args.real_ratio)
         model_batch_size = args.policy_train_batch_size - env_batch_size
 
         env_state, env_action, env_reward, env_next_state, env_done = env_pool.sample(int(env_batch_size))
@@ -188,6 +188,7 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
         else:
             batch_state, batch_action, batch_reward, batch_next_state, batch_done = env_state, env_action, env_reward, env_next_state, env_done
 
+        batch_reward, batch_done = np.squeeze(batch_reward), np.squeeze(batch_done)
         agent.update_parameters((batch_state, batch_action, batch_reward, batch_next_state, batch_done), args.policy_train_batch_size, i)
 
     return args.num_train_repeat
