@@ -111,7 +111,7 @@ class Ensemble_Model():
         cnt = 0
         for idx in self.elite_model_idxes:
             pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
-            ensemble_mean[:,:,cnt], ensemble_logvar[:,:,cnt] = pred_2d_mean.detach().numpy(), pred_2d_logvar.detach().numpy()
+            ensemble_mean[:,:,cnt], ensemble_logvar[:,:,cnt] = pred_2d_mean.detach().cpu().numpy(), pred_2d_logvar.detach().cpu().numpy()
             cnt += 1
         return ensemble_mean, ensemble_logvar
 
