@@ -113,8 +113,9 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
                 train_policy_repeats(args, total_step, train_policy_steps, cur_step, env_pool, model_pool, agent)
 
             total_step += 1
-            reward_sum += reward
-            print(total_step, reward_sum)
+
+            if total_step % 1000 == 0:
+                print(total_step, env_sampler.path_rewards[-1])
 
 
 def set_rollout_length(args, epoch_step):

@@ -7,6 +7,8 @@ class EnvSampler():
         self.path_length = 0
         self.current_state = None
         self.max_path_length = max_path_length
+        self.path_rewards = []
+        self.sum_reward = 0
 
     def sample(self, agent):
         if self.current_state is None:
@@ -16,11 +18,14 @@ class EnvSampler():
         action = agent.select_action(self.current_state, eval=True)
         next_state, reward, terminal, info = self.env.step(action)
         self.path_length += 1
+        self.sum_reward += reward
 
         # TODO: Save the path to the env_pool
         if terminal or self.path_length >= self.max_path_length:
             self.current_state = None
             self.path_length = 0
+            self.path_rewards.append(self.sum_reward)
+            self.sum_reward = 0
         else:
             self.current_state = next_state
 
