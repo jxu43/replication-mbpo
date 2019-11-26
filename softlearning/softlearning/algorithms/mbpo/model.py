@@ -60,7 +60,7 @@ class Game_model(nn.Module):
         logvar = self.max_logvar - F.softplus(self.max_logvar - nn5_output[:, self.output_dim:])
         logvar = self.min_logvar + F.softplus(logvar - self.min_logvar)
 
-        return mean, logvar
+        return mean, torch.exp(logvar)
 
     def loss(self, mean, logvar, labels, inc_var_loss=True):
         inv_var = torch.exp(-logvar)
