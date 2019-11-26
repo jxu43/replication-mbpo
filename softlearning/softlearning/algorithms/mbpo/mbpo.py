@@ -175,9 +175,9 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
 
         if model_batch_size > 0:
             model_state, model_action, model_reward, model_next_state, model_done = model_pool.sample(int(model_batch_size))
-            batch_state, batch_action, batch_reward, batch_next_state, batch_done = np.concatenate((env_state, model_state), axis=-1), \
-                np.concatenate((env_action, model_action), axis=-1), np.concatenate((env_reward, model_reward), axis=-1), \
-                np.concatenate((env_next_state, model_next_state), axis=-1), np.concatenate((env_done, model_done), axis=-1)
+            batch_state, batch_action, batch_reward, batch_next_state, batch_done = np.concatenate((env_state, model_state), axis=0), \
+                np.concatenate((env_action, model_action), axis=0), np.concatenate((env_reward, model_reward), axis=0), \
+                np.concatenate((env_next_state, model_next_state), axis=0), np.concatenate((env_done, model_done), axis=0)
         else:
             batch_state, batch_action, batch_reward, batch_next_state, batch_done = env_state, env_action, env_reward, env_next_state, env_done
 
