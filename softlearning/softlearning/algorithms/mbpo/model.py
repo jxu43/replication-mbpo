@@ -91,6 +91,8 @@ class Ensemble_Model():
             self.model_list.append(Game_model(state_size, action_size, reward_size, hidden_size))
 
     def train(self, inputs, labels):
+        inputs = torch.from_numpy(inputs).float().to(device)
+        labels = torch.from_numpy(labels).float().to(device)
         losses = []
         for model in self.model_list:
             mean, logvar = model(inputs)
