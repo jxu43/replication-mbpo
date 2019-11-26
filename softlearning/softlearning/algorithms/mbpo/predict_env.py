@@ -6,7 +6,7 @@ class PredictEnv:
         self.env_name = env_name
 
     def _termination_fn(self, env_name, obs, act, next_obs):
-        if env_name == "Hopper_v2":
+        if env_name == "Hopper-v2":
             assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
 
             height = next_obs[:, 0]
