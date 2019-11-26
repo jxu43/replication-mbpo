@@ -171,10 +171,10 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
         env_batch_size = args.policy_train_batch_size * args.real_ratio
         model_batch_size = args.policy_train_batch_size - env_batch_size
 
-        env_state, env_action, env_reward, env_next_state, env_done = env_pool.sample(env_batch_size)
+        env_state, env_action, env_reward, env_next_state, env_done = env_pool.sample(int(env_batch_size))
 
         if model_batch_size > 0:
-            model_state, model_action, model_reward, model_next_state, model_done = model_pool.sample(model_batch_size)
+            model_state, model_action, model_reward, model_next_state, model_done = model_pool.sample(int(model_batch_size))
             batch_state, batch_action, batch_reward, batch_next_state, batch_done = np.concatenate((env_state, model_state), axis=0), \
                 np.concatenate((env_action, model_action), axis=0), np.concatenate((env_reward, model_reward), axis=0), \
                 np.concatenate((env_next_state, model_next_state), axis=0), np.concatenate((env_done, model_done), axis=0)
