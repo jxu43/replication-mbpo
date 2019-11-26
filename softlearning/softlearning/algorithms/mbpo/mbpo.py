@@ -93,10 +93,10 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
         for i in count():
             cur_step = total_step - start_step
 
-            if (cur_step >= start_step + args.epoch_length and len(env_pool) > args.min_pool_size):
+            if cur_step >= start_step + args.epoch_length and len(env_pool) > args.min_pool_size:
                 break
 
-            if cur_step % args.model_train_freq == 0 and args.real_ratio < 1.0:
+            if cur_step > 0 and cur_step % args.model_train_freq == 0 and args.real_ratio < 1.0:
                 train_predict_model(env_pool, predict_env)
 
                 new_rollout_length = set_rollout_length(args, epoch_step)
@@ -126,8 +126,6 @@ def set_rollout_length(args, epoch_step):
 
 def train_predict_model(env_pool, predict_env):
     # Get all samples from environment
-    if len(env_pool) == 0:
-        return
     state, action, reward, next_state, done = env_pool.sample(len(env_pool))
     delta_state = next_state - state
     inputs = np.concatenate((state, action), axis=-1)
