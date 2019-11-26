@@ -53,7 +53,7 @@ def readParser():
                     help='retain epochs')
     parser.add_argument('--model_train_freq', type=int, default=250, metavar='A',
                     help='frequency of training')
-    parser.add_argument('--rollout_batch_size', type=int, default=100e3, metavar='A',
+    parser.add_argument('--rollout_batch_size', type=int, default=1000000, metavar='A',
                     help='rollout number M')
     parser.add_argument('--epoch_length', type=int, default=1000, metavar='A',
                     help='steps per epoch')
@@ -113,7 +113,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
             env_pool.push(cur_state, action, reward, next_state, done)
 
             if len(env_pool) > args.min_pool_size:
-                train_policy_repeats(args, total_step, train_policy_steps, cur_step, env_pool, model_pool, agent)
+                train_policy_steps += train_policy_repeats(args, total_step, train_policy_steps, cur_step, env_pool, model_pool, agent)
 
             total_step += 1
 

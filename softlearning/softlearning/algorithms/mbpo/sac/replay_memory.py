@@ -29,7 +29,7 @@ class ReplayMemory:
     def sample(self, batch_size):
         if batch_size > self.position:
             batch_size = self.position
-        batch = random.sample(self.buffer, batch_size)
+        batch = random.sample(self.buffer, int(batch_size))
         state, action, reward, next_state, done = map(np.stack, zip(*batch))
         return state, action, reward, next_state, done
 
