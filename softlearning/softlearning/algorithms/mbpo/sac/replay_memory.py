@@ -17,8 +17,14 @@ class ReplayMemory:
         if len(self.buffer) < self.capacity:
             append_len = min(self.capacity - len(self.buffer), len(batch))
             self.buffer.extend([None] * append_len)
-        idxes = [(self.position + i) % self.capacity for i in range(len(batch))]
-        self.buffer[idxes] = batch
+
+        if self.position + len(batch) < self.capacity:
+            self.buffer[self.position : self.position + len(batch)] = batch
+            self.position += len(batch)
+        else:
+            self.buffer[self.position : len(self.buffer)] = batch[:len(self.buffer) - self.position]
+            self.buffer[:len(batch) - len(self.buffer) + self.position] = batch[len(self.buffer) - self.position:]
+            self.position = len(batch) - len(self.buffer) + self.position
 
     def sample(self, batch_size):
         if batch_size > self.position:
