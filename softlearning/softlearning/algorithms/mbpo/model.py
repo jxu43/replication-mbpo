@@ -105,8 +105,8 @@ class Ensemble_Model():
 
     def predict(self, inputs):
         #TODO: change hardcode number to len(?)
-        ensemble_mean = np.zeros((self.elite_size, inputs.shape[0], self.state_size + self.reward_size))
-        ensemble_logvar = np.zeros((self.elite_size, inputs.shape[0], self.state_size + self.reward_size))
+        ensemble_mean = np.zeros((self.network_size, inputs.shape[0], self.state_size + self.reward_size))
+        ensemble_logvar = np.zeros((self.network_size, inputs.shape[0], self.state_size + self.reward_size))
         inputs = torch.from_numpy(inputs).float().to(device)
         for idx in range(self.network_size):
             pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
