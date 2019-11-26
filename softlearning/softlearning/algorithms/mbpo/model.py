@@ -55,9 +55,9 @@ class Game_model(nn.Module):
         nn4_output = self.nn4(nn3_output)
         nn5_output = self.nn5(nn4_output)
 
-        mean = nn5_output[:, :self.output_dim + 1]
+        mean = nn5_output[:, :self.output_dim]
 
-        logvar = self.max_logvar - torch.nn.Softplus(self.max_logvar - nn5_output[:, self.output_dim + 1:])
+        logvar = self.max_logvar - torch.nn.Softplus(self.max_logvar - nn5_output[:, self.output_dim:])
         logvar = self.min_logvar + torch.nn.Softplus(logvar - self.min_logvar)
 
         return mean, logvar
