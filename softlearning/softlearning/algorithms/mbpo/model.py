@@ -43,8 +43,8 @@ class Game_model(nn.Module):
         # Add variance output
         self.nn5 = nn.Linear(hidden_size, self.output_dim * 2)
 
-        self.max_logvar = Variable(torch.ones(1, self.output_dim).type(torch.FloatTensor) / 2, requires_grad=True).to(device)
-        self.min_logvar = Variable(-torch.ones(1, self.output_dim).type(torch.FloatTensor) * 10, requires_grad=True).to(device)
+        self.max_logvar = Variable(torch.ones((1, self.output_dim)).type(torch.FloatTensor) / 2, requires_grad=True).to(device)
+        self.min_logvar = Variable(-torch.ones((1, self.output_dim)).type(torch.FloatTensor) * 10, requires_grad=True).to(device)
 
         self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
 
