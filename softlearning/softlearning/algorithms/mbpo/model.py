@@ -66,7 +66,7 @@ class Game_model(nn.Module):
         inv_var = torch.exp(-logvar)
         if inc_var_loss:
             mse_loss = torch.mean(torch.pow(mean - labels, 2) * inv_var)
-            var_loss = torch.mean(log_var)
+            var_loss = torch.mean(logvar)
             total_loss = mse_loss + var_loss
         else:
             mse_loss = nn.MSELoss()
