@@ -105,8 +105,8 @@ class Ensemble_Model():
 
     def predict(self, inputs):
         #TODO: change hardcode number to len(?)
-        ensemble_mean = np.zeros((inputs.size()[0], self.state_size + self.reward_size, self.elite_size))
-        ensemble_logvar = np.zeros((inputs.size()[0], self.state_size + self.reward_size, self.elite_size))
+        ensemble_mean = np.zeros((inputs.shape[0], self.state_size + self.reward_size, self.elite_size))
+        ensemble_logvar = np.zeros((inputs.shape[0], self.state_size + self.reward_size, self.elite_size))
         cnt = 0
         for idx in self.elite_model_idxes:
             pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
