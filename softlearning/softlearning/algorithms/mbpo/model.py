@@ -108,11 +108,9 @@ class Ensemble_Model():
         ensemble_mean = np.zeros((self.elite_size, inputs.shape[0], self.state_size + self.reward_size))
         ensemble_logvar = np.zeros((self.elite_size, inputs.shape[0], self.state_size + self.reward_size))
         inputs = torch.from_numpy(inputs).float().to(device)
-        cnt = 0
-        for idx in self.elite_model_idxes:
+        for idx in range(self.network_size):
             pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
-            ensemble_mean[cnt,:,:], ensemble_logvar[cnt,:,:] = pred_2d_mean.detach().cpu().numpy(), pred_2d_logvar.detach().cpu().numpy()
-            cnt += 1
+            ensemble_mean[idx,:,:], ensemble_logvar[idx,:,:] = pred_2d_mean.detach().cpu().numpy(), pred_2d_logvar.detach().cpu().numpy()
         return ensemble_mean, ensemble_logvar
 
 
