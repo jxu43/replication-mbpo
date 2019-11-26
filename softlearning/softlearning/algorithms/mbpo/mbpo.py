@@ -129,7 +129,7 @@ def train_predict_model(env_pool, predict_env):
     state, action, reward, next_state, done = env_pool.sample(len(env_pool))
     delta_state = next_state - state
     inputs = np.concatenate((state, action), axis=-1)
-    labels = np.concatenate((reward, delta_state), axis=-1)
+    labels = np.concatenate((np.reshape(reward, (reward.shape[0], -1)), delta_state), axis=-1)
 
     predict_env.model.train(inputs, labels)
 
