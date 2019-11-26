@@ -119,7 +119,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
 
             if total_step % 1000 == 0:
                 avg_reward_len = min(len(env_sampler.path_rewards), 5)
-                avg_reward = sum(env_sampler.path_rewards[avg_reward_len:]) / avg_reward_len
+                avg_reward = sum(env_sampler.path_rewards[-avg_reward_len:]) / avg_reward_len
                 logging.info("Step Reward: " + str(total_step) + " " + str(env_sampler.path_rewards[-1]) + " " + str(avg_reward))
                 print(total_step, env_sampler.path_rewards[-1], avg_reward)
 
