@@ -7,7 +7,7 @@ class EnvSampler():
 
         self.path_length = 0
         self.current_state = None
-        self._max_path_length = max_path_length
+        self.max_path_length = max_path_length
 
     def sample(self):
         if self.current_state is None:
