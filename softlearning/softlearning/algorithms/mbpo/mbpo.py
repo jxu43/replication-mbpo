@@ -151,7 +151,7 @@ def rollout_model(args, predict_env, agent, model_pool, env_pool, rollout_length
     for i in range(rollout_length):
         # TODO: Get a batch of actions
         action = agent.select_action(state, eval=True)
-        next_states, rewards, terminals, info = predict_env.step(obs, act)
+        next_states, rewards, terminals, info = predict_env.step(state, action)
         # TODO: Push a batch of samples
         model_pool.push(state, action, rewards, next_states, terminals)
         nonterm_mask = ~term.squeeze(-1)
