@@ -118,7 +118,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
             total_step += 1
 
             if total_step % 1000 == 0:
-                logging.info("Step Reward: " + str(total_step) + " " + env_sampler.path_rewards[-1])
+                logging.info("Step Reward: " + str(total_step) + " " + str(env_sampler.path_rewards[-1]))
                 print(total_step, env_sampler.path_rewards[-1])
 
 
