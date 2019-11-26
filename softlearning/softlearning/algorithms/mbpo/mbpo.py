@@ -106,7 +106,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
 
                 rollout_model(args, predict_env, agent, model_pool, env_pool, rollout_length)
 
-            cur_state, action, next_state, reward, done, info = env_sampler.sample()
+            cur_state, action, next_state, reward, done, info = env_sampler.sample(agent)
             env_pool.push(cur_state, action, reward, next_state, done)
 
             if len(env_pool) > args.min_pool_size:
@@ -220,7 +220,7 @@ def main():
     model_pool = ReplayMemory(new_pool_size)
 
     # Sampler of environment
-    env_sampler = EnvSampler(env, agent)
+    env_sampler = EnvSampler(env)
 
     train(args, env_sampler, predict_env, agent, env_pool, model_pool)
 
