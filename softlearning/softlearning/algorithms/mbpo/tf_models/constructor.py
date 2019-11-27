@@ -1,8 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from fc import FC
-from bnn import BNN
+from tf_models.fc import FC
+from tf_models.bnn import BNN
 
 def construct_model(obs_dim=11, act_dim=3, rew_dim=1, hidden_dim=200, num_networks=7, num_elites=5, session=None):
 	print('[ BNN ] Observation dim {} | Action dim: {} | Hidden dim: {}'.format(obs_dim, act_dim, hidden_dim))

@@ -13,8 +13,8 @@ import numpy as np
 from tqdm import trange
 from scipy.io import savemat, loadmat
 
-from utils import get_required_argument, TensorStandardScaler
-from fc import FC
+from tf_models.utils import get_required_argument, TensorStandardScaler
+from tf_models.fc import FC
 
 np.set_printoptions(precision=5)
 
