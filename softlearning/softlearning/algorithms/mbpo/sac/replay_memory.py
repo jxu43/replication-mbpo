@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from operator import itemgetter
 
 class ReplayMemory:
     def __init__(self, capacity):
@@ -30,6 +31,12 @@ class ReplayMemory:
         if batch_size > self.position:
             batch_size = self.position
         batch = random.sample(self.buffer, int(batch_size))
+        state, action, reward, next_state, done = map(np.stack, zip(*batch))
+        return state, action, reward, next_state, done
+
+    def sample_all_batch(self, batch_size):
+        idxes = np.random.randint(0, len(self.buffer), batch_size)
+        batch = list(itemgetter(*idxes)(self.buffer))
         state, action, reward, next_state, done = map(np.stack, zip(*batch))
         return state, action, reward, next_state, done
 

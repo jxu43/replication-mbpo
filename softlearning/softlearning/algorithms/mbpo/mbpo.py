@@ -155,7 +155,7 @@ def resize_model_pool(args, rollout_length, model_pool):
 
 
 def rollout_model(args, predict_env, agent, model_pool, env_pool, rollout_length):
-    state, action, reward, next_state, done = env_pool.sample(args.rollout_batch_size)
+    state, action, reward, next_state, done = env_pool.sample_all_batch(args.rollout_batch_size)
     for i in range(rollout_length):
         # TODO: Get a batch of actions
         action = agent.select_action(state, eval=True)
