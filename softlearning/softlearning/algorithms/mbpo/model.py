@@ -16,7 +16,7 @@ train_labels_file_path = './MNIST_data/train-labels-idx1-ubyte.gz'
 test_inputs_file_path = './MNIST_data/t10k-images-idx3-ubyte.gz'
 test_labels_file_path = './MNIST_data/t10k-labels-idx1-ubyte.gz'
 
-BATCH_SIZE = 100
+# BATCH_SIZE = 100
 
 class Game_model(nn.Module):
     def __init__(self, network_size, state_size, action_size, reward_size, hidden_size=200, learning_rate=1e-2):
@@ -92,14 +92,15 @@ class Ensemble_Model():
         self.elite_model_idxes = []
         self.model = Game_model(network_size, state_size, action_size, reward_size, hidden_size)
 
-    def train(self, inputs, labels):
-        inputs = torch.from_numpy(inputs).float().to(device)
-        labels = torch.from_numpy(labels).float().to(device)
+    def train(self, inputs, labels, batch_size=100):
+        for start_pos in range(0, inputs.shape[0], batch_size):
+            input = torch.from_numpy(inputs[start_pos : start_pos + batch_size]).float().to(device)
+            label = torch.from_numpy(labels[start_pos : start_pos + batch_size]).float().to(device)
 
-        mean, logvar = self.model(inputs)
-        losses, total_loss = self.model.loss(mean, logvar, labels)
-        losses = losses.detach().cpu().numpy()
-        self.model.train(total_loss)
+            mean, logvar = self.model(input)
+            losses, total_loss = self.model.loss(mean, logvar, label)
+            losses = losses.detach().cpu().numpy()
+            self.model.train(total_loss)
 
         sorted_loss_idx = np.argsort(losses)
         self.elite_model_idxes = sorted_loss_idx[:self.elite_size].tolist()
