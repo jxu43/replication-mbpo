@@ -93,7 +93,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
     total_step = 0
     reward_sum = 0
     rollout_length = 1
-    exploration_before_start(args, env_sampler, env_pool)
+    exploration_before_start(args, env_sampler, env_pool, agent)
     for epoch_step in range(args.num_epoch):
         start_step = total_step
         train_policy_steps = 0
@@ -128,7 +128,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
                 print(total_step, env_sampler.path_rewards[-1], avg_reward)
 
 
-def exploration_before_start(args, env_sampler, env_pool):
+def exploration_before_start(args, env_sampler, env_pool, agent):
     for i in range(args.init_exploration_steps):
         cur_state, action, next_state, reward, done, info = env_sampler.sample(agent)
         env_pool.push(cur_state, action, reward, next_state, done)
