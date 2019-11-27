@@ -133,7 +133,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
                 env_sampler.current_state = None
                 sum_reward = 0
                 done = False
-                while !done:
+                while not done:
                     cur_state, action, next_state, reward, done, info = env_sampler.sample(agent, eval_t=True)
                     sum_reward += reward
                 print(sum_reward)
