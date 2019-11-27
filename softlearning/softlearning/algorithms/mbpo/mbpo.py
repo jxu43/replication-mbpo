@@ -124,10 +124,19 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
             total_step += 1
 
             if total_step % 1000 == 0:
+                '''
                 avg_reward_len = min(len(env_sampler.path_rewards), 5)
                 avg_reward = sum(env_sampler.path_rewards[-avg_reward_len:]) / avg_reward_len
                 logging.info("Step Reward: " + str(total_step) + " " + str(env_sampler.path_rewards[-1]) + " " + str(avg_reward))
                 print(total_step, env_sampler.path_rewards[-1], avg_reward)
+                '''
+                env_sampler.current_state = None
+                sum_reward = 0
+                done = False
+                while !done:
+                    cur_state, action, next_state, reward, done, info = env_sampler.sample(agent, eval_t=True)
+                    sum_reward += reward
+                print(sum_reward)
 
 
 def exploration_before_start(args, env_sampler, env_pool, agent):
@@ -169,7 +178,7 @@ def rollout_model(args, predict_env, agent, model_pool, env_pool, rollout_length
     state, action, reward, next_state, done = env_pool.sample_all_batch(args.rollout_batch_size)
     for i in range(rollout_length):
         # TODO: Get a batch of actions
-        action = agent.select_action(state, eval=True)
+        action = agent.select_action(state)
         next_states, rewards, terminals, info = predict_env.step(state, action)
         # TODO: Push a batch of samples
         model_pool.push_batch([(state[j], action[j], rewards[j], next_states[j], terminals[j]) for j in range(state.shape[0])])

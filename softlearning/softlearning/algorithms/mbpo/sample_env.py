@@ -10,12 +10,12 @@ class EnvSampler():
         self.path_rewards = []
         self.sum_reward = 0
 
-    def sample(self, agent):
+    def sample(self, agent, eval_t=False):
         if self.current_state is None:
             self.current_state = self.env.reset()
 
         cur_state = self.current_state
-        action = agent.select_action(self.current_state, eval=True)
+        action = agent.select_action(self.current_state, eval_t)
         next_state, reward, terminal, info = self.env.step(action)
         self.path_length += 1
         self.sum_reward += reward
