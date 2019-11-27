@@ -50,7 +50,7 @@ def readParser():
     parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 10000000)')
 
-    parser.add_argument('--model_retain_epochs', type=int, default=20, metavar='A',
+    parser.add_argument('--model_retain_epochs', type=int, default=1, metavar='A',
                     help='retain epochs')
     parser.add_argument('--model_train_freq', type=int, default=250, metavar='A',
                     help='frequency of training')
