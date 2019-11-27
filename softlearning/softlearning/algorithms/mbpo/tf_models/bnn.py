@@ -16,6 +16,8 @@ from scipy.io import savemat, loadmat
 from tf_models.utils import get_required_argument, TensorStandardScaler
 from tf_models.fc import FC
 
+from tf_models.logging import Progress, Silent
+
 np.set_printoptions(precision=5)
 
 
@@ -333,6 +335,10 @@ class BNN:
             self.scaler.fit(inputs)
 
         idxs = np.random.randint(inputs.shape[0], size=[self.num_nets, inputs.shape[0]])
+        if hide_progress:
+            progress = Silent()
+        else:
+            progress = Progress(max_epochs)
 
         if max_epochs:
             epoch_iter = range(max_epochs)
@@ -364,6 +370,7 @@ class BNN:
                             }
                         )
                     named_losses = [['M{}'.format(i), losses[i]] for i in range(len(losses))]
+                    progress.set_description(named_losses)
                 else:
                     losses = self.sess.run(
                             self.mse_loss,
@@ -382,18 +389,22 @@ class BNN:
                     named_losses = [['M{}'.format(i), losses[i]] for i in range(len(losses))]
                     named_holdout_losses = [['V{}'.format(i), holdout_losses[i]] for i in range(len(holdout_losses))]
                     named_losses = named_losses + named_holdout_losses + [['T', time.time() - t0]]
+                    progress.set_description(named_losses)
 
                     break_train = self._save_best(epoch, holdout_losses)
 
+            progress.update()
             t = time.time() - t0
             if break_train or (max_grad_updates and grad_updates > max_grad_updates):
                 break
             if max_t and t > max_t:
                 descr = 'Breaking because of timeout: {}! (max: {})'.format(t, max_t)
+                progress.append_description(descr)
                 # print('Breaking because of timeout: {}! | (max: {})\n'.format(t, max_t))
                 # time.sleep(5)
                 break
 
+        progress.stamp()
         if timer: timer.stamp('bnn_train')
 
         self._set_state()
