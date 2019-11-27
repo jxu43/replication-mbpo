@@ -216,7 +216,7 @@ def main():
     state_size = np.prod(env.observation_space.shape)
     action_size = np.prod(env.action_space.shape)
     # env_model = Ensemble_Model(args.num_networks, args.num_elites, state_size, action_size, args.reward_size, args.pred_hidden_size)
-    env_model = construct_model(obs_dim=args.state_size, act_dim=args.action_size, hidden_dim=args.pred_hidden_size, num_networks=args.network_size, num_elites=args.elite_size)
+    env_model = construct_model(obs_dim=state_size, act_dim=action_size, hidden_dim=args.pred_hidden_size, num_networks=args.network_size, num_elites=args.elite_size)
 
     # Predict environments
     predict_env = PredictEnv(env_model, args.env_name)
