@@ -171,7 +171,7 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
     if total_step % args.train_every_n_steps > 0:
         return 0
 
-    if train_step > args.max_train_repeat_per_step * cur_step:
+    if train_step > args.max_train_repeat_per_step * total_step:
         return 0
 
     for i in range(args.num_train_repeat):
