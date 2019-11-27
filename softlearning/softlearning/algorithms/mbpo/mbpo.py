@@ -10,7 +10,7 @@ from sac.sac import SAC
 from model import Ensemble_Model
 from predict_env import PredictEnv
 from sample_env import EnvSampler
-from models.constructor import construct_model, format_samples_for_training
+from tf_models.constructor import construct_model, format_samples_for_training
 
 def readParser():
     parser = argparse.ArgumentParser(description='MBPO')
