@@ -19,7 +19,7 @@ class PredictEnv:
             done = ~not_done
             done = done[:,None]
             return done
-        else if env_name == "Walker2d-v2":
+        elif env_name == "Walker2d-v2":
             assert len(obs.shape) == len(next_obs.shape) == len(act.shape) == 2
 
             height = next_obs[:, 0]
