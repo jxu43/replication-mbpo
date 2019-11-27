@@ -90,10 +90,12 @@ def readParser():
 
 def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
     logging.basicConfig(filename=time.strftime("%Y%m%d-%H%M%S") + '_train.log', level=logging.INFO)
+
     total_step = 0
     reward_sum = 0
     rollout_length = 1
     exploration_before_start(args, env_sampler, env_pool, agent)
+
     for epoch_step in range(args.num_epoch):
         start_step = total_step
         train_policy_steps = 0
@@ -190,7 +192,7 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
 
         env_state, env_action, env_reward, env_next_state, env_done = env_pool.sample(int(env_batch_size))
 
-        if model_batch_size > 0:
+        if model_batch_size > 0 and len(model_pool) > 0:
             model_state, model_action, model_reward, model_next_state, model_done = model_pool.sample(int(model_batch_size))
             batch_state, batch_action, batch_reward, batch_next_state, batch_done = np.concatenate((env_state, model_state), axis=0), \
                 np.concatenate((env_action, model_action), axis=0), np.concatenate((np.reshape(env_reward, (env_reward.shape[0], -1)), model_reward), axis=0), \
