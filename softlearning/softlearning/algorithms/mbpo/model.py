@@ -110,6 +110,7 @@ class Ensemble_Model():
         ensemble_logvar = np.zeros((self.network_size, inputs.shape[0], self.state_size + self.reward_size))
         inputs = torch.from_numpy(inputs).float().to(device)
         ensemble_mean, ensemble_logvar = self.model(inputs)
+        ensemble_mean, ensemble_logvar = ensemble_mean.detach().cpu().numpy(), ensemble_logvar.detach().cpu().numpy()
 
         return ensemble_mean, ensemble_logvar
 
