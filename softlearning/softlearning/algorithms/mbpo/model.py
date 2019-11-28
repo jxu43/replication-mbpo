@@ -112,7 +112,7 @@ class Ensemble_Model():
         for i in range(0, inputs.shape[0], batch_size):
             input = torch.from_numpy(inputs[i:min(i + batch_size, inputs.shape[0])]).float().to(device)
             for idx in range(self.network_size):
-                pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
+                pred_2d_mean, pred_2d_logvar = self.model_list[idx](input)
                 ensemble_mean[idx,i:min(i + batch_size, inputs.shape[0]),:], ensemble_logvar[idx,i:min(i + batch_size, inputs.shape[0]),:] \
                     = pred_2d_mean.detach().cpu().numpy(), pred_2d_logvar.detach().cpu().numpy()
 
