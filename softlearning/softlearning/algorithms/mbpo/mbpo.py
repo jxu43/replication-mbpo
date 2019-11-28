@@ -89,8 +89,6 @@ def readParser():
 
 
 def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
-    logging.basicConfig(filename=time.strftime("%Y%m%d-%H%M%S") + '_train.log', level=logging.INFO)
-
     total_step = 0
     reward_sum = 0
     rollout_length = 1
@@ -218,6 +216,8 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
 
 
 def main():
+    logging.basicConfig(filename=time.strftime("%Y%m%d-%H%M%S") + '_train.log', level=logging.INFO)
+    
     args = readParser()
 
     # Initial environment
