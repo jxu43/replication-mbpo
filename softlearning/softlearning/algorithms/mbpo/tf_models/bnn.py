@@ -48,7 +48,8 @@ class BNN:
         if params.get('sess', None) is None:
             config = tf.ConfigProto()
             # config.gpu_options.allow_growth = True
-            self._sess = tf.Session(config=config)
+            gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
+            self._sess = tf.Session(config=config, gpu_options=gpu_options)
         else:
             self._sess = params.get('sess')
 
