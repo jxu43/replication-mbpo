@@ -217,7 +217,7 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
 
 def main():
     logging.basicConfig(filename=time.strftime("%Y%m%d-%H%M%S") + '_train.log', level=logging.INFO)
-    
+
     args = readParser()
 
     # Initial environment
@@ -237,8 +237,8 @@ def main():
     # Initial ensemble model
     state_size = np.prod(env.observation_space.shape)
     action_size = np.prod(env.action_space.shape)
-    # env_model = Ensemble_Model(args.num_networks, args.num_elites, state_size, action_size, args.reward_size, args.pred_hidden_size)
-    env_model = construct_model(obs_dim=state_size, act_dim=action_size, hidden_dim=args.pred_hidden_size, num_networks=args.num_networks, num_elites=args.num_elites)
+    env_model = Ensemble_Model(args.num_networks, args.num_elites, state_size, action_size, args.reward_size, args.pred_hidden_size)
+    # env_model = construct_model(obs_dim=state_size, act_dim=action_size, hidden_dim=args.pred_hidden_size, num_networks=args.num_networks, num_elites=args.num_elites)
 
     # Predict environments
     predict_env = PredictEnv(env_model, args.env_name)
