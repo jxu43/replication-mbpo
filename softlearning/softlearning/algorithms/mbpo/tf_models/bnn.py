@@ -16,7 +16,7 @@ from scipy.io import savemat, loadmat
 from tf_models.utils import get_required_argument, TensorStandardScaler
 from tf_models.fc import FC
 
-from tf_models.logging import Progress, Silent
+from tf_models.tf_logging import Progress, Silent
 
 np.set_printoptions(precision=5)
 
