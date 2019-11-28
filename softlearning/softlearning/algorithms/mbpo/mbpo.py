@@ -210,6 +210,7 @@ def train_policy_repeats(args, total_step, train_step, cur_step, env_pool, model
             batch_state, batch_action, batch_reward, batch_next_state, batch_done = env_state, env_action, env_reward, env_next_state, env_done
 
         batch_reward, batch_done = np.squeeze(batch_reward), np.squeeze(batch_done)
+        batch_done = (~batch_done).astype(int)
         agent.update_parameters((batch_state, batch_action, batch_reward, batch_next_state, batch_done), args.policy_train_batch_size, i)
 
     return args.num_train_repeat
