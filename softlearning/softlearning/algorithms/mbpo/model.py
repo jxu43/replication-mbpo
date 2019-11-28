@@ -105,14 +105,17 @@ class Ensemble_Model():
         sorted_loss_idx = np.argsort(losses)
         self.elite_model_idxes = sorted_loss_idx[:self.elite_size].tolist()
 
-    def predict(self, inputs):
+    def predict(self, inputs, batch_size=1024):
         #TODO: change hardcode number to len(?)
         ensemble_mean = np.zeros((self.network_size, inputs.shape[0], self.state_size + self.reward_size))
         ensemble_logvar = np.zeros((self.network_size, inputs.shape[0], self.state_size + self.reward_size))
-        inputs = torch.from_numpy(inputs).float().to(device)
-        for idx in range(self.network_size):
-            pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
-            ensemble_mean[idx,:,:], ensemble_logvar[idx,:,:] = pred_2d_mean.detach().cpu().numpy(), pred_2d_logvar.detach().cpu().numpy()
+        for i in range(0, inputs.shape[0], batch_size):
+            input = torch.from_numpy(inputs[i:min(i + batch_size, inputs.shape[0])]).float().to(device)
+            for idx in range(self.network_size):
+                pred_2d_mean, pred_2d_logvar = self.model_list[idx](inputs)
+                ensemble_mean[idx,i:min(i + batch_size, inputs.shape[0]),:], ensemble_logvar[idx,i:min(i + batch_size, inputs.shape[0]),:] \
+                    = pred_2d_mean.detach().cpu().numpy(), pred_2d_logvar.detach().cpu().numpy()
+
         return ensemble_mean, ensemble_logvar
 
 
