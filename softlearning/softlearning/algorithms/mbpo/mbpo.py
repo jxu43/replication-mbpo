@@ -83,6 +83,9 @@ def readParser():
     parser.add_argument('--init_exploration_steps', type=int, default=5000, metavar='A',
                     help='exploration steps initially')
 
+    parser.add_argument('--model_type', default='tensorflow', metavar='A',
+                    help='predict model -- pytorch or tensorflow')
+
     parser.add_argument('--cuda', default=True, action="store_true",
                     help='run on CUDA (default: True)')
     return parser.parse_args()
@@ -104,7 +107,7 @@ def train(args, env_sampler, predict_env, agent, env_pool, model_pool):
                 break
 
             if cur_step > 0 and cur_step % args.model_train_freq == 0 and args.real_ratio < 1.0:
-                train_predict_model(env_pool, predict_env)
+                train_predict_model(args, env_pool, predict_env)
 
                 new_rollout_length = set_rollout_length(args, epoch_step)
                 if rollout_length != new_rollout_length:
@@ -151,15 +154,17 @@ def set_rollout_length(args, epoch_step):
     return int(rollout_length)
 
 
-def train_predict_model(env_pool, predict_env):
+def train_predict_model(args, env_pool, predict_env):
     # Get all samples from environment
     state, action, reward, next_state, done = env_pool.sample(len(env_pool))
     delta_state = next_state - state
     inputs = np.concatenate((state, action), axis=-1)
     labels = np.concatenate((np.reshape(reward, (reward.shape[0], -1)), delta_state), axis=-1)
 
-    # predict_env.model.train(inputs, labels, batch_size=256, holdout_ratio=0.2)
-    predict_env.model.train(inputs, labels, batch_size=256)
+    if args.model_type == 'pytorch':
+        predict_env.model.train(inputs, labels, batch_size=256)
+    else:
+        predict_env.model.train(inputs, labels, batch_size=256, holdout_ratio=0.2)
 
 
 def resize_model_pool(args, rollout_length, model_pool):
@@ -235,11 +240,13 @@ def main():
     # Initial ensemble model
     state_size = np.prod(env.observation_space.shape)
     action_size = np.prod(env.action_space.shape)
-    env_model = Ensemble_Model(args.num_networks, args.num_elites, state_size, action_size, args.reward_size, args.pred_hidden_size)
-    # env_model = construct_model(obs_dim=state_size, act_dim=action_size, hidden_dim=args.pred_hidden_size, num_networks=args.num_networks, num_elites=args.num_elites)
+    if args.model_type == 'pytorch':
+        env_model = Ensemble_Model(args.num_networks, args.num_elites, state_size, action_size, args.reward_size, args.pred_hidden_size)
+    else:
+        env_model = construct_model(obs_dim=state_size, act_dim=action_size, hidden_dim=args.pred_hidden_size, num_networks=args.num_networks, num_elites=args.num_elites)
 
     # Predict environments
-    predict_env = PredictEnv(env_model, args.env_name)
+    predict_env = PredictEnv(env_model, args.env_name, args.model_type)
 
     # Initial pool for env
     env_pool = ReplayMemory(args.replay_size)

@@ -1,9 +1,10 @@
 import numpy as np
 
 class PredictEnv:
-    def __init__(self, model, env_name):
+    def __init__(self, model, env_name, model_type):
         self.model = model
         self.env_name = env_name
+        self.model_type = model_type
 
     def _termination_fn(self, env_name, obs, act, next_obs):
         if env_name == "Hopper-v2":
@@ -58,8 +59,10 @@ class PredictEnv:
             return_single = False
 
         inputs = np.concatenate((obs, act), axis=-1)
-        # ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
-        ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
+        if self.model_type == 'pytorch':
+            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs)
+        else:
+            ensemble_model_means, ensemble_model_vars = self.model.predict(inputs, factored=True)
         ensemble_model_means[:,:,1:] += obs
         ensemble_model_stds = np.sqrt(ensemble_model_vars)
 
@@ -71,8 +74,11 @@ class PredictEnv:
 
         num_models, batch_size, _ = ensemble_model_means.shape
         model_idxes = np.random.choice(self.model.elite_model_idxes, size=batch_size)
-        # model_idxes = self.model.random_inds(batch_size)
-        batch_idxes = np.arange(0, batch_size)
+        if self.model_type == 'pytorch':
+            batch_idxes = np.arange(0, batch_size)
+        else:
+            model_idxes = self.model.random_inds(batch_size)
+
         samples = ensemble_samples[model_idxes, batch_idxes]
         model_means = ensemble_model_means[model_idxes, batch_idxes]
         model_stds = ensemble_model_stds[model_idxes, batch_idxes]
